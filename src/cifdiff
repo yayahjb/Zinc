@@ -1,0 +1,15 @@
+#! /bin/csh
+#
+# @(#) cifdiff 1.5 10/4/94
+#
+# find difference in two cifs.
+#
+# written by Dave Stampf
+
+cifZinc $1 | sort -t\	 +0 -1 +4 +1 -2 +2n -3 | \
+	gawk -F\	 -v OFS=\	 '{print $1,$2,$3,$4}' > /tmp/$1.zinc
+cifZinc $2 | sort -t\	 +0 -1 +4 +1 -2 +2n -3 | \
+	gawk -F\	 -v OFS=\	 '{print $1,$2,$3,$4}' > /tmp/$2.zinc
+
+diff /tmp/$1.zinc /tmp/$2.zinc
+rm /tmp/$1.zinc /tmp/$2.zinc

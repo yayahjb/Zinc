@@ -1,0 +1,43 @@
+#! PERL
+#
+#
+#	zincNl - create a namelist file from a cif/zinc
+#
+#	@(#) zincNl.dist 1.3 10/4/94
+#
+# written by Dave Stampf.
+
+$lead = "\$";
+$block = "";
+
+if ($ARGV[0]) {
+	close(STDIN);
+	$file = $ARGV[0];
+	if ($file =~ /cif$/) {
+		$command = "cifZinc $file|";
+		open(STDIN,$command);
+	} else {
+		open(STDIN,"<$file");
+	}
+}
+
+while (<STDIN>) {
+	chop;
+	($b, $n, $i, $v, $k) = split(/	/,$_);		# what a terrific line!
+	$n =~ s/^_//;
+	if ($b ne $block) {
+		if ($block ne "") {
+			print " \$\n";
+		}
+		$block = $b;
+		print " \$ $block ";
+	}
+	if ($i eq "") {
+			print "$n = $v\n";
+	} else {
+		$index = $i + 1;
+		print " $n($index) = $v \n";
+	}
+}
+
+print " \$\n"

@@ -1,0 +1,229 @@
+#! PERL
+#
+#
+#	zincCif - pretty print a cifZinced file.
+#
+#	@(#) zincCif.dist 1.12 10/4/94
+#
+# written by Dave Stampf
+
+#
+# global variables
+#
+
+$block = "";			# current data block name
+$dnindent = "    ";		# proper indentation for the next data name.
+$ncol = 0;				# column you have writen into
+$lastindex = -1;		# last index of a looped data name
+$tablecolumn = 0;		# number of columns in the table
+$tablerow = 0;			# number of rows in the table
+$wroteloop = 0;
+$inloop = 0;			# flag - inside loop?
+$kexpect = "";			# kounts loops.
+
+#
+# read the cifCat-ed file on standard input for now.
+#
+
+if ($ARGV[0]) {
+	close(STDIN);
+	open(STDIN,"< $ARGV[0]");
+}
+while (<STDIN>) {
+	chop;
+	($b, $n, $i, $v, $k) = split(/	/,$_);		# what a terrific line!
+#
+#	loop maint.
+#
+	if ($inloop && ($k ne $kexpect)) {
+		$inloop = 0;
+		&displaytable;
+	}
+	if (! $inloop) {
+		if ($i =~ /[0-9]+/) {
+			$inloop = 1;
+			$wroteloop = 0;
+			$tablecolumn = 0;
+			$tablerow = 0;
+			$kexpect = $k;
+		}
+	} 
+
+#
+#	Has the block name changed?
+#
+    if ($b ne $block) {
+        if ($b eq "global_") {
+            print "\n$b\n";
+        } else {
+                print "\ndata_$b\n";
+        }
+        $ncol = 0;
+        $block = $b;
+    }
+
+#
+#	data name then data value
+#
+	if ($n eq "(") {
+		if ($ncol) {
+			print "\n";
+		}
+		print "$v\n";
+		$ncol = 0;
+		next;
+	}
+	if ($n eq ")") {
+		&tcomment($v);
+	}
+	if ($i eq "") {
+		$dnindent = "    ";
+		&displayname($dnindent . "$n" . "   ");
+		while ($ncol < 39) {
+			print " ";
+			$ncol++;
+		}
+		&displayvalue($v);
+		print "\n";
+		$ncol = 0;
+		next;
+	}
+	if ($i eq "0") {
+		if ($wroteloop == 0) {
+			print $dnindent . "loop_";
+			$ncol = $ncol + length($dnindent) + 5;
+			$dnindent = " ";
+			$wroteloop = 1;
+		}
+		&displayname ($dnindent . "$n");
+		print("\n");
+		$ncol = 0;
+		$dnindent = "          ";
+		$lastindex = $i;
+		$tablerow = 0;
+		$table{0,$tablecolumn++} = $v;
+		next;
+	} else {
+		if ($i eq $lastindex) {
+			$table{$tablerow,$tablecolumn++} = $v;	
+			next;
+		} else {
+			$lastindex = $i;
+			$tablecolumn = 0;
+			$tablerow++;
+			$table{$tablerow,$tablecolumn++} = $v;
+		}
+	}
+}
+if ($inloop) {
+	&displaytable;
+}
+
+sub tcomment {
+}
+
+#
+# display the dataname. Make sure you don't run over 80 columns
+#
+
+sub displayname {
+	$name = $_[0];
+
+	$ncol += (length($name) + 3);
+	if ($ncol<= 80) {
+		print "$name   ";
+	} else {
+		print "\n$name   ";
+		$ncol = length($name) + 3;
+	}
+}
+
+#
+# display the datavalue. Make sure you don't run over 80 columns
+#
+
+sub displayvalue {
+	local($value,$l);
+
+	$value = $_[0];
+	$l = length($value);
+	if ($value =~ /\\n/) {
+		$l = 81;
+		$value =~ s%\\n%\n%g;
+	}
+
+	$ncol += ($l + 3);
+	if ($ncol<= 80) {
+		print "$value   ";
+	} elsif ($l < 77) {
+		print "\n$value   ";
+		$ncol = $l + 3;
+	} else {
+		print("\n$value\n");
+		$ncol = 0;
+	}
+}
+
+#
+# display a table(rows,cols)
+#
+
+sub displaytable {
+	local($row,$col,@width,$totalwidth);
+
+	for ($col=0;$col<$tablecolumn;$col++) {
+		$width[$col] = 0;
+		for ($row=0;$row<=$tablerow;$row++) {
+			if ($width[$col] > 80) {
+				next;
+			}
+			if (length($table{$row,$col}) > $width[$col]) {
+				$width[$col] = length($table{$row,$col});
+			}
+			if ($table{$row,$col} =~ /\\n/) {
+				$width[$col] = 8884;
+			}
+		}
+		$width[$col] += 4;
+	}
+	$totalwidth = 0;
+	for ($col=0;$col<$tablecolumn;$col++) {
+		$totalwidth += $width[$col];
+	}
+	$indent = 40;
+	while (($indent > 0) && ($indent + $totalwidth > 80)) {
+		$indent -= 10;
+	}
+	
+	for ($row=0;$row<=$tablerow;$row++) {
+		if ($indent > 0) {
+			printf "%${indent}c",' ';
+			$ncol += $indent;
+		}
+		for($col=0;$col<$tablecolumn;$col++) {
+			$ncol += $width[$col];
+			if ($ncol <= 80) {
+					printf "%-$width[$col]s", $table{$row,$col};
+					$ncol += ($width[$col]);
+			} else {
+				if ($width[$col] > 80) {
+					&displayvalue($table{$row,$col});
+				} else {
+					printf "\n %-$width[$col]s", $table{$row,$col};
+					$ncol = $width[$col] + 1;
+				}	
+			}
+		}
+		if ($ncol > 0) {
+			print "\n";
+			$ncol = 0;
+		}
+	}
+	$tablerow = 0;
+	$tablecolumn = 0;
+	if ($ncol != 0) {
+		print("\n");
+		$ncol = 0;
+	}
+	$dnindent = "    ";
+}

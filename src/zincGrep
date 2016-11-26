@@ -1,0 +1,30 @@
+#! /bin/csh
+#
+# @(#) zincGrep 1.1 10/4/94
+#
+# Grep through a cif/zinc
+#
+# written by Dave Stampf
+
+set switches 
+
+while ( 1 )
+	switch ($1)
+
+	case '-*':
+		set switches = ($1 $switches)
+		breaksw;
+
+	default:	
+		break;
+
+	endsw
+	shift
+end
+
+if ($#argv == 1) then
+	cifZinc | grep $switches $1
+else
+	cifZinc $2 | grep $switches $1
+endif
+

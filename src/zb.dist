@@ -1,0 +1,177 @@
+#! WISH -f
+#
+#
+#   @(#) zb.dist 1.4 10/4/94      
+#
+# Browse a cif using the zinc format.
+#
+# written by Dave Stampf
+
+global Line
+
+wm title . "Galvenize - browse a cif"
+wm minsize . 200 200
+#wm geometry . =400x400
+
+#
+# The main window simply holds menu for opening a file, and the list box
+# for the block names
+#
+
+frame .menubar -relief raised -borderwidth 1
+
+pack .menubar -side top -fill x
+
+#
+# Describe the menus
+#
+
+# File Menu
+
+menubutton .menubar.file -text "File" -menu .menubar.file.m
+menu .menubar.file.m
+.menubar.file.m add command -label "Open" -command open
+.menubar.file.m add command -label "Quit" -command quit
+
+# Help menu
+
+menubutton .menubar.help -text "Help" -menu .menubar.help.m
+menu .menubar.help.m
+.menubar.help.m add command -label "About..." -command About
+.menubar.help.m add command -label "Help..." -command Help
+.menubar.help.m add command -label "Credits..." -command Credits
+
+pack .menubar.file -side left
+
+pack .menubar.help -side right
+
+proc quit {} { exit 0 }
+
+label .blocktitle -relief raised -text "Block Names"
+pack .blocktitle -side top -fill x
+listbox .names -relief raised -borderwidth 2 -yscrollcommand ".scroll set"
+scrollbar .scroll -command ".names yview"
+pack .scroll -side right -fill y -anchor e
+pack .names -side left -anchor w -fill both -expand 1 
+
+# read in the file, extract the data block names and place into an array.
+# Sort that array and place in the window.
+#
+# if there are no command line args, read zinc from stdin. If there are, and
+# the file name looks like  *.cif, zinc it.
+#
+if {$argc == 0} {
+	set f stdin
+} else {
+	if {[regexp {cif$} [lindex $argv 0]]} {
+		set f [open "|cifZinc [lindex $argv 0]" r+]
+	} else {
+		set f [open [lindex $argv 0] r+]
+	}
+}
+gets $f line
+
+set index [string first {	} $line]
+set cBlock [string range $line 0 [expr $index -1]]
+set rest [string range $line [expr $index + 1] end]
+
+set n 0
+set Blocks [list $cBlock]
+set Line($cBlock,$n) $rest
+set n 1
+
+while {[gets $f line] > 0} {
+	set index [string first {	} $line]
+	set block [string range $line 0 [expr $index -1]]
+	set rest [string range $line [expr $index + 1] end]
+	if {$block != $cBlock} {
+		set cBlock $block
+		lappend Blocks $cBlock
+		set n 0
+	}
+	set Line($cBlock,$n) $rest
+	set n [expr $n + 1]
+}
+
+#
+# Now, sort the list of blocks and display.
+#
+
+set Blocks [lsort $Blocks]
+
+set nl [llength $Blocks]
+set i 0
+
+while {$i < $nl} {
+	.names insert end [lindex $Blocks $i]
+	set i [expr $i + 1]
+}
+
+# Position a dialog box at a reasonable place on the screen.
+
+proc dpos w {
+    wm geometry $w +300+300
+}
+
+bind .names <Double-Button-1> {
+#
+# make a top level window that has the a title bar reflecting the data block
+#
+	global Line
+
+	set x [selection get]
+
+	regsub -all {_} $x { } t
+	regsub -all {\[} $x ( x
+	regsub -all {\]} $x ( x
+
+	toplevel .$x
+	dpos .$x
+	wm title .$x $t
+	text .$x.text -bd 2 -yscrollcommand ".$x.yscroll set" -width 120 \
+		-font -Adobe-Courier-Medium-R-Normal-*-120-* 
+	scrollbar .$x.yscroll -command ".$x.text yview"
+	pack .$x.yscroll -side right -fill y
+	pack .$x.text -side left
+
+	set i 0
+	while { [info exists Line($x,$i)] } {
+		regexp {([^	]*)	([^	]*)	([^	]*)} $Line($x,$i) dummy name n value
+		#puts "$name $n $value"
+
+#
+#	For simple vars, append a name and value to the window.
+#
+
+		if {$n == {} } {
+			.$x.text insert end $name 
+			set length [string length $name]
+			while { $length < 33 } {
+				.$x.text insert end { }
+				set length [expr $length + 1]
+			}
+			regsub -all {\\n} $value {
+                                 } v
+			.$x.text insert end $v
+			.$x.text insert end {
+}
+		} else {
+			.$x.text insert end $name 
+			.$x.text insert end "($n)"
+			set length [string length $name]
+			set length [expr $length + [string length "($n)"]]
+			while { $length < 33 } {
+				.$x.text insert end { }
+				set length [expr $length + 1]
+			}
+			regsub -all {\\n} $value {
+                                 } v
+			.$x.text insert end $v
+			.$x.text insert end {
+}
+		}	
+		set i [expr $i + 1]
+	}
+}
+
+ 

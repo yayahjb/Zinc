@@ -1,0 +1,15 @@
+data_bigloop
+     _name     "lots of points"
+     _author
+;
+    Dave Stampf
+;
+     loop_
+          _x     _y     _color
+           0      0     red
+           1      1     red
+           2      4     red
+           3      9     orange
+           4      16     orange 
+           5      25     orange
+	_status	complete		

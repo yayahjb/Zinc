@@ -1,0 +1,38 @@
+#! /bin/csh
+#
+# @(#) zincSubset 1.4 10/4/94
+#
+# Generate a subset of a specified CIF.
+#
+# Written by Dave Stampf
+
+set v = 
+set c = 
+
+
+set noglob
+
+while ( 1 )
+	switch ($1)
+
+	case -v:	
+		set v = -v
+		breaksw;
+
+	case -c:	
+		set c = -c 
+		breaksw
+
+	case '-*':
+		echo Bad switch $1 
+		exit 1;
+
+	default:	
+		break;
+
+	endsw
+	shift
+end
+
+cifZinc $c $2 | egrep $v -f $1 
+

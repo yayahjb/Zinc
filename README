@@ -1,0 +1,63 @@
+This is a package call Zinc, created by the late David Stampf when the Protein
+Data Bank was at BNL.  This is a slightly updated version maintained
+by Herbert J. Bernstein, and placed under the GPL and LGPL to ensure
+continued open source availability, with permission from the U.S. Department
+of Energy.
+
+This version Copyright 2016, Herbert J. Bernstein
+
+
+        You may redistribute this package under the terms
+         of the GPL.
+         
+         Alternatively you may redistribute the functions
+         and subroutines of this ppackage as an API under the
+         terms of the LGPL
+     *******************************************************
+ *************************** GPL NOTICES ******************************
+ *                                                                    *
+ * This program is free software; you can redistribute it and/or      *
+ * modify it under the terms of the GNU General Public License as     *
+ * published by the Free Software Foundation; either version 2 of     *
+ * (the License, or (at your option) any later version.               *
+ *                                                                    *
+ * This program is distributed in the hope that it will be useful,    *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the      *
+ * GNU General Public License for more details.                       *
+ *                                                                    *
+ * You should have received a copy of the GNU General Public License  *
+ * along with this program; if not, write to the Free Software        *
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA           *
+ * 02111-1307  USA                                                    *
+ *                                                                    *
+ **********************************************************************
+ 
+ ************************* LGPL NOTICES *******************************
+ *                                                                    *
+ * This library is free software; you can redistribute it and/or      *
+ * modify it under the terms of the GNU Lesser General Public         *
+ * License as published by the Free Software Foundation; either       *
+ * version 2.1 of the License, or (at your option) any later version. *
+ *                                                                    *
+ * This library is distributed in the hope that it will be useful,    *
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of     *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU  *
+ * Lesser General Public License for more details.                    *
+ *                                                                    *
+ * You should have received a copy of the GNU Lesser General Public   *
+ * License along with this library; if not, write to the Free         *
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,    *
+ * MA  02110-1301  USA                                                *
+ *                                                                    *
+ **********************************************************************
+
+This directory has the cifZinc, zincCif, and other ZINC based  applications.
+It also has the postscript versions of the slides of a talk given at the 
+Brussels CIF Meeting in October 1994, and a paper written to describe ZINC. 
+
+All of the code was designed and written by Dave Stampf. Please feel free to 
+use it. Let me know how you like it! (drs@bnl.gov)
+
+
+
